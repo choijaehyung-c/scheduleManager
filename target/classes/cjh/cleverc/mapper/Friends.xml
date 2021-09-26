@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+    
+<mapper namespace="cjh.cleverc.mapper.Friends">
+	<select id="getTeamList" parameterType="cjh.cleverc.beans.TeamBean" resultType="cjh.cleverc.beans.TeamBean">
+		SELECT * FROM TL WHERE MMID = #{mmId}
+	</select>
+	
+	<select id="getTeamMemberList" parameterType="cjh.cleverc.beans.TeamDetailsBean" resultType="cjh.cleverc.beans.TeamDetailsBean">
+		SELECT * FROM ML WHERE TECODE = #{teCode}
+	</select>
+	
+	<select id="getTodayTeamCodeList" resultType="int">
+		SELECT COALESCE(TO_NUMBER(MAX(SUBSTR(TE_CODE,7,3))),0) AS "INDEX" FROM TE WHERE SUBSTR(TE_CODE,1,6) = TO_CHAR(SYSDATE,'YYMMDD')
+	</select>
+	
+	<insert id="insertTeam" parameterType="cjh.cleverc.beans.TeamDetailsBean">
+		INSERT INTO TE VALUES(#{teCode},#{teName})
+	</insert>
+	
+	<insert id="insertTeamDetail" parameterType="cjh.cleverc.beans.TeamDetailsBean">
+		INSERT INTO TD VALUES(#{teCode},#{mmId},#{typeCode})
+	</insert>
+	
+	<select id="FriendsList" parameterType="cjh.cleverc.beans.TeamBean" resultType="cjh.cleverc.beans.TeamBean">
+		SELECT FR_RESPONSE AS "mmId" FROM FR WHERE FR_REQUEST = #{mmId} AND FR_CONFIRM = '1' 
+		UNION
+		SELECT FR_REQUEST FROM FR WHERE FR_RESPONSE = #{mmId} AND FR_CONFIRM = '1'
+	</select>
+	
+	<insert id="insertReqFriend" parameterType="cjh.cleverc.beans.UserBean">
+		INSERT INTO FR VALUES(#{userId},#{friend},'0')
+	</insert>
+	<select id="isUserId2" parameterType="cjh.cleverc.beans.UserBean" resultType="int">
+		SELECT COUNT(*) FROM MM WHERE MM_ID = #{userId}
+	</select>
+	<select id="requestFriendsList" parameterType="string" resultType="cjh.cleverc.beans.UserBean">
+		SELECT FR_REQUEST as "userId" FROM FR WHERE FR_RESPONSE = #{data} AND FR_CONFIRM = '0'
+	</select>
+	
+	<update id="updateConfirm" parameterType="cjh.cleverc.beans.UserBean">
+		UPDATE FR SET FR_CONFIRM  = #{confirm} WHERE FR_REQUEST = #{friend} AND FR_RESPONSE = #{userId}
+	</update>
+	
+	<select id="isTeamMember" parameterType="cjh.cleverc.beans.TeamBean" resultType="int">
+		SELECT COUNT(*) FROM TD WHERE TD_TECODE = #{teCode} AND TD_MMID = #{mmId}
+	</select>
+	
+	<select id="searchFriendDB" resultType="cjh.cleverc.beans.UserBean">
+		SELECT MM_ID AS "USERID",MM_NAME AS "USERNAME",MM_EMAIL AS "USEREMAIL" FROM MM
+	</select>
+	
+<!-- 	<select id="addFriends" parameterType="string" resultType="int">
+		SELECT COUNT(*) FROM MM WHERE MM_ID = #{data}
+	</select> -->
+	
+</mapper>

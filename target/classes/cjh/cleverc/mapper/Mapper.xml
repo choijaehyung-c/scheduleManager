@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace 상속, 연동 -->
+<mapper namespace="cjh.cleverc.mapper.Mapper">
+	<select id="isUserId" parameterType="cjh.cleverc.beans.AccessInfo" resultType="int">
+		SELECT COUNT(*) FROM MM WHERE MM_ID = #{userId}
+	</select>
+	<select id="getAccess" parameterType="cjh.cleverc.beans.AccessInfo" resultType="string">
+		SELECT MM_PASSWORD AS code FROM MM WHERE MM_ID = #{userId}
+	</select>
+	<insert id="insAccessHistory" parameterType="cjh.cleverc.beans.AccessInfo">
+		INSERT INTO AH(AH_MMID,AH_DATE,AH_PUBLICIP,AH_PRIVATEIP,AH_METHOD,AH_BROWSER)
+		 VALUES(#{userId},default,#{publicIp},#{privateIp},#{method},#{browser})
+	</insert>
+	<insert id="insMember" parameterType="cjh.cleverc.beans.UserBean">
+		INSERT INTO MM(MM_ID,MM_PASSWORD,MM_NAME,MM_EMAIL) VALUES(#{userId},#{userPwd},#{userName},#{userEmail})
+	</insert>
+	<select id="getUserInfo" parameterType="cjh.cleverc.beans.AccessInfo" resultType="cjh.cleverc.beans.UserBean">
+		SELECT MM_ID AS userId,MM_NAME AS userName,MM_EMAIL AS userEmail FROM MM WHERE MM_ID = #{userId}
+	</select>
+	<select id="getThisAccessHistory" parameterType="cjh.cleverc.beans.AccessInfo" resultType="int">
+		SELECT COALESCE(SUM(AH_METHOD),0) FROM AH WHERE AH_MMID = #{userId} AND AH_PUBLICIP = #{publicIp} AND 
+		AH_PRIVATEIP = #{privateIp} AND AH_BROWSER = #{browser}
+	</select>
+	<select id="getAccessHistory" parameterType="cjh.cleverc.beans.AccessInfo" resultType="int">
+		SELECT COALESCE(SUM(AH_METHOD),0) FROM AH WHERE AH_MMID = #{userId}
+	</select>
+	<select id="getBrowser" parameterType="cjh.cleverc.beans.AccessInfo" resultType="string">
+	SELECT AH_BROWSER||AH_PUBLICIP||AH_PRIVATEIP FROM(SELECT * FROM AH WHERE AH_MMID =#{userId} ORDER BY AH_DATE DESC) WHERE ROWNUM = 1
+	</select>
+	<insert id="forceLogout" parameterType="cjh.cleverc.beans.AccessInfo">
+		INSERT INTO AH(AH_MMID,AH_DATE,AH_PUBLICIP,AH_PRIVATEIP,AH_METHOD,AH_BROWSER) 
+		SELECT AH_MMID,SYSDATE,AH_PUBLICIP,AH_PRIVATEIP,-1,AH_BROWSER FROM AH 
+		WHERE AH_DATE = (SELECT MAX(AH_DATE) FROM AH WHERE AH_MMID=#{userId}) AND AH_METHOD = #{method}
+	</insert>
+</mapper>

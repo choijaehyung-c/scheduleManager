@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+    
+<mapper namespace="cjh.cleverc.mapper.ScheduleMapper">
+	<insert id="insertDataPath" parameterType="string">
+		INSERT INTO AB VALUES('123123123',TO_CHAR(SYSDATE,'yyMMddHH24mmss'),#{data})
+	</insert>
+	
+	<select id="getPath" resultType="string">
+		SELECT AL_PATH FROM AB WHERE AL_SDNUM='210804110823'
+	</select>
+</mapper>
